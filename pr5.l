@@ -1,24 +1,13 @@
 %{
 #include <stdio.h>
-
-FILE *yyin;
 %}
 
 %%
-"int"|"float"|"char"|"if"|"else"|"while"|"for"|"return"	{ printf("%s --> Keyword\n", yytext); }
 
-[0-9]+	 { printf("%s --> Number\n", yytext); }
 
-[a-zA-Z_][a-zA-Z0-9_]* { printf("%s --> Identifier\n", yytext); }
-
-"+"|"-"|"*"|"/"|"=" { printf("%s --> Operator\n", yytext); }
-
-"("|")"|"{"|"}"|";"|"," { printf("%s --> Special Symbol\n", yytext); }
-
-[ \t\n] ;
-
-.	 { printf("%s --> Invalid Character\n", yytext); }
-
+^[aeiouAEIOU].*    { printf("String starts with a vowel\n"); }
+.*                 { printf("String does not start with a vowel\n"); }
+\n 		   { return 0 ; }
 %%
 
 int yywrap()
@@ -28,17 +17,8 @@ int yywrap()
 
 int main()
 {
-    yyin = fopen("input2.txt", "r");
-
-    if (yyin == NULL)
-    {
-        printf("File not found\n");
-        return 1;
-    }
-
+    printf("Enter a string: ");
     yylex();
-
-    fclose(yyin);
 
     return 0;
 }
