@@ -1,176 +1,186 @@
-#include <stdio.h>
+ #include <stdio.h>
+
 #include <string.h>
+
 #include <stdlib.h>
 
-#define MAX 20
+struct symbol
 
-/* Structure for Symbol Table */
-struct Symbol
 {
-    char name[20];
-    int address;
+
+ char name[20];
+
+ int address;
+
 };
 
-/* Structure for Literal Table */
-struct Literal
-{
-    char name[20];
-    int address;
-};
+struct literal
 
+{
+
+ char name[20];
+
+ int address;
+
+};
 int main()
+
 {
-    FILE *fp;
 
-    char line[100];
-    char word1[20], word2[20], word3[20];
+ FILE *fp;
 
-    struct Symbol symtab[MAX];
-    struct Literal littab[MAX];
+ char line[100], label[20], op[20], arg[30], literal[20];
 
-    int symCount = 0;
-    int litCount = 0;
-    int LC = 0;
+ struct symbol sym[50];
 
-    /* Open input file */
-    fp = fopen("pr8input.txt", "r");
+ struct literal lit[50];
 
-    if (fp == NULL)
-    {
-        printf("File cannot be opened.\n");
-        return 1;
-    }
+ int sc = 0, lc = 0, loc = 0, i, found;
 
-    while (fgets(line, sizeof(line), fp))
-    {
-        word1[0] = '\0';
-        word2[0] = '\0';
-        word3[0] = '\0';
+ char *p;
 
-        sscanf(line, "%s %s %s", word1, word2, word3);
+ fp = fopen("input.txt", "r");
 
-        /* START */
-        if (strcmp(word1, "START") == 0)
-        {
-            LC = atoi(word2);
-        }
+ if (fp == NULL)
 
-        /* Check for label */
-        else if (strcmp(word1, "MOVER") == 0 ||
-                 strcmp(word1, "ADD") == 0 ||
-                 strcmp(word1, "MOVEM") == 0 ||
-                 strcmp(word1, "STOP") == 0)
-        {
-            /* No label */
-        }
+ {
 
-        else if (strcmp(word1, "END") == 0)
-        {
-            /* Assign addresses to literals */
-            for (int i = 0; i < litCount; i++)
-            {
-                if (littab[i].address == 0)
-                {
-                    littab[i].address = LC;
-                    LC++;
-                }
-            }
-        }
+ printf("File not found");
 
-        else
-        {
-            /* Label found */
-            int found = 0;
+ return 0;
 
-            for (int i = 0; i < symCount; i++)
-            {
-                if (strcmp(symtab[i].name, word1) == 0)
-                {
-                    symtab[i].address = LC;
-                    found = 1;
-                    break;
-                }
-            }
+ }
 
-            if (!found)
-            {
-                strcpy(symtab[symCount].name, word1);
-                symtab[symCount].address = LC;
-                symCount++;
-            }
+ while (fgets(line, 100, fp) != NULL)
 
-            if (strcmp(word2, "DS") == 0)
-            {
-                LC += atoi(word3);
-            }
-            else if (strcmp(word2, "DC") == 0)
-            {
-                LC++;
-            }
-        }
+ {
 
-        /* Find literals in operands */
-        if (strchr(line, '=') != NULL)
-        {
-            char *p = strchr(line, '=');
-            char literal[20];
+ label[0] = '\0';
 
-            sscanf(p, "%s", literal);
+ op[0] = '\0';
 
-            int found = 0;
+ arg[0] = '\0';
 
-            for (int i = 0; i < litCount; i++)
-            {
-                if (strcmp(littab[i].name, literal) == 0)
-                {
-                    found = 1;
-                    break;
-                }
-            }
+ sscanf(line, "%s %s %s", label, op, arg);
 
-            if (!found)
-            {
-                strcpy(littab[litCount].name, literal);
-                littab[litCount].address = 0;
-                litCount++;
-            }
-        }
+ if (strcmp(label, "START") == 0)
 
-        /* Increment LC for instructions */
-        if (strcmp(word1, "MOVER") == 0 ||
-            strcmp(word1, "ADD") == 0 ||
-            strcmp(word1, "MOVEM") == 0 ||
-            strcmp(word1, "STOP") == 0)
-        {
-            LC++;
-        }
-    }
+ {
 
-    fclose(fp);
+ loc = atoi(op);
 
-    /* Display Symbol Table */
-    printf("\nSYMBOL TABLE\n");
-    printf("--------------------\n");
-    printf("Symbol\tAddress\n");
+ continue;
 
-    for (int i = 0; i < symCount; i++)
-    {
-        printf("%s\t%d\n",
-               symtab[i].name,
-               symtab[i].address);
-    }
+ }
 
-    /* Display Literal Table */
-    printf("\nLITERAL TABLE\n");
-    printf("--------------------\n");
-    printf("Literal\tAddress\n");
+ if (strcmp(label, "END") == 0)
 
-    for (int i = 0; i < litCount; i++)
-    {
-        printf("%s\t%d\n",
-               littab[i].name,
-               littab[i].address);
-    }
+ break;
 
-    return 0;
+ if (strcmp(label, "-") != 0)
+
+ {
+
+ found = 0;
+for (i = 0; i < sc; i++)
+
+ {
+
+ if (strcmp(sym[i].name, label) == 0)
+
+ found = 1;
+
+ }
+
+ if (found == 0)
+
+ {
+
+ strcpy(sym[sc].name, label);
+
+ sym[sc].address = loc;
+
+ sc++;
+
+ }
+
+ }
+
+ p = strchr(line, '=');
+
+ if (p != NULL)
+
+ {
+
+ sscanf(p, "%s", literal);
+
+ found = 0;
+
+ for (i = 0; i < lc; i++)
+
+ {
+
+ if (strcmp(lit[i].name, literal) == 0)
+
+ found = 1;
+
+ }
+
+ if (found == 0)
+
+ {
+
+ strcpy(lit[lc].name, literal);
+
+ lit[lc].address = -1;
+
+ lc++;
+
+ }
+
+ }
+
+ if (strcmp(op, "DS") == 0)
+     loc += atoi(arg);
+
+ else
+
+ loc++;
+
+ }
+
+ for (i = 0; i < lc; i++)
+
+ {
+
+ lit[i].address = loc;
+
+ loc++;
+
+ }
+
+ printf("\nSYMTAB\n");
+
+ printf("-------\n");
+
+ printf("Symbol\tAddress\n");
+
+ for (i = 0; i < sc; i++)
+
+ printf("%s\t%d\n", sym[i].name, sym[i].address);
+
+ printf("\nLITTAB\n");
+
+ printf("-------\n");
+
+ printf("Literal\tAddress\n");
+
+ for (i = 0; i < lc; i++)
+
+ printf("%s\t%d\n", lit[i].name, lit[i].address);
+
+ fclose(fp);
+
+ return 0;
+
 }
